@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en" ng-app>
+  <head>
+    <title>Chat Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <style>
+      body {
+        padding-top: 60px;
+      }
+    </style>
+    <script>
+      function ChatController($scope) {
+        var socket = io.connect();
+
+        $scope.messages = [];
+        $scope.roster = [];
+        $scope.name = '';
+        $scope.text = '';
+
+        socket.on('connect', function () {
+          $scope.setName();
+        });
+
+        socket.on('message', function (msg) {
+          $scope.messages.push(msg);
+          $scope.$apply();
+        });
+
+        socket.on('roster', function (names) {
+          $scope.roster = names;
+          $scope.$apply();
+        });
+
+        $scope.send = function send() {
+          console.log('Sending message:', $scope.text);
+          socket.emit('message', $scope.text);
+          $scope.text = '';
+        };
+
+        $scope.setName = function setName() {
+          socket.emit('identify', $scope.name);
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container" ng-controller="ChatController">
+      <div class="navbar navbar-fixed-top navbar-inverse">
+        <div class="navbar-inner">
+          <div class="pull-right">
+            <a href="https://c9.io" class="brand">Cloud9 IDE</a>
+          </div>
+        </div>
+      </div>
+      <div class="page-header">
+        <h1>Chat Example</h1>
+      </div>
+      <div class="row">
+        
+        <div class="span3">
+          <ul class="nav nav-list well">
+            <li class="nav-header">Local Users</li>
+            <li ng-repeat="user in roster" ng-bind="user">
+            </li>
+          </ul>
+        </div>
+        <div class="span9">
+          <table class="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th class="span2">Name</th>
+                <th class="span7">Text</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="msg in messages">
+                <td class="span2" ng-bind="msg.name"></td>
+                <td class="span7" ng-bind="msg.text"></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row controls">
+            <form ng-submit="send()">
+              <div class="span2"><input type="text" class="input-block-level" ng-model="name" ng-change="setName()" placeholder="Your Name"></div>
+              <div class="input-append span7">
+                <input type="text" class="span6" ng-model="text" placeholder="Message">
+                <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text">
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        
+
+        
+        <div class="span3">
+        </div>
+        
+        <div class="span9">
+          <canvas id="myChart" width="800" height="400"></canvas>
+          
+          <canvas id="radarChart" width="800" height="400"></canvas>
+        </div>
+        
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/angular.min.js"></script>
+    
+    <!--Chart-->
+    <script src="/js/chart/Chart.js"></script>
+    <script>
+    var ctx = document.getElementById("myChart");
+    var myChart= new Chart(ctx, {
+          //グラフの種類
+          type: 'bar',
+          
+          
+          //データの設定
+          data: {
+              //データ項目のラベル
+              labels: ["1月", "2月", "3月", "4月", "5月", "6月"],
+              //データセット
+              datasets: [{
+                  //凡例
+                  label: "契約数",
+                  //背景色
+                  backgroundColor: "rgba(75,192,192,0.4)",
+                  //枠線の色
+                  borderColor: "rgba(75,192,192,1)",
+                  //グラフのデータ
+                  data: [12, 19, 3, 5, 2, 3]
+              }]
+          },
+          //オプションの設定
+          options: {
+              //軸の設定
+              scales: {
+                  //縦軸の設定
+                  yAxes: [{
+        　　　　　　　　　//目盛りの設定
+                      ticks: {
+                          //開始値を0にする
+                          beginAtZero:true,
+                      }
+                  }]
+              }
+          }
+        });
+        
+        
+        
+    // var ctx = document.getElementById("radarChart");
+    var data = {
+      labels: ["Eating", "Drinking", "Sleeping", "Designing", "Coding", "Cycling", "Running"],//カテゴリー名
+      datasets: [
+        {
+          label: "My First dataset",//項目名
+          fillColor: "rgba(220,220,220,0.2)",//塗りつぶす色
+          strokeColor: "rgba(220,220,220,1)",//線の色
+          pointColor: "rgba(220,220,220,1)",//値の点を塗りつぶす色
+          pointStrokeColor: "#fff",//値の点の枠線の色
+          pointHighlightFill: "#fff",//マウスオーバー時値の点を塗りつぶす色
+          pointHighlightStroke: "rgba(220,220,220,1)",//マウスオーバー時値の点の枠線を塗りつぶす色
+          data: [65, 59, 90, 81, 56, 55, 40]//値
+        },
+      ]
+    };
+    
+    var radarChart = new Chart(document.getElementById("radarChart").getContext("2d")).Radar(data);
+    
+    </script>
+  </body>
+</html>
